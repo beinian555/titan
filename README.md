@@ -60,7 +60,7 @@ Docker Desktop (必须处于运行状态)
 Git
 
 2. Installation (安装项目)
-Bash
+
 # 1. 克隆项目 (请替换为你的 GitHub 地址)
 git clone [https://github.com/YOUR_USERNAME/titan.git](https://github.com/YOUR_USERNAME/titan.git)
 cd titan
@@ -70,7 +70,6 @@ go mod tidy
 3. Start Dependencies (启动依赖)
 本项目依赖 Etcd 作为元数据存储。推荐使用 Docker 快速启动一个单节点 Etcd：
 
-Bash
 docker run -d --name etcd-server \
   --publish 2379:2379 \
   --env ALLOW_NONE_AUTHENTICATION=yes \
@@ -81,19 +80,18 @@ docker run -d --name etcd-server \
 Terminal 1: 启动 Master (调度器)
 Master 启动后会开始监听 Etcd 中的任务事件。
 
-Bash
 go run cmd/master/main.go
 # 输出: [Master] 🚀 Started, watching for new jobs...
 Terminal 2: 启动 Worker (计算节点)
 Worker 启动后会自动注册到 Etcd，并开始接收分配给它的任务。
 
-Bash
+
 go run cmd/worker/main.go
 # 输出: [Worker] Agent started, registered as worker-node-xx...
 Terminal 3: 使用 CLI 提交任务
 使用命令行工具提交任务、查询状态或查看日志。
 
-Bash
+
 # 1. 提交一个普通任务
 go run cmd/titan-cli/main.go
 # 输出: ✅ Job submitted! ID: job-1705...

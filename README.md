@@ -105,16 +105,14 @@ Titan 支持高并发场景下的压力测试。你可以使用 CLI 的 -n 参�
 
 在 Terminal 3 中运行：
 
-Bash
-# 模拟提交 50 个并发任务，每个任务模拟计算 5 秒
-go run cmd/titan-cli/main.go -n 50 -t 5
+go run cmd/titan-cli/main.go -n 100 -t 5
 预期效果：
 
-CLI 瞬间完成 50 个任务的分发。
+CLI 瞬间完成 100 个任务的分发。
 
 Master 日志疯狂滚动，毫秒级完成调度。
 
-你的 Docker Desktop 中将看到 50 个 Alpine 容器同时运行！
+你的 Docker Desktop 中将看到 100 个 Alpine 容器同时运行
 
 📂 Project Structure (目录结构)
 Plaintext
@@ -130,9 +128,4 @@ titan/
 │   ├── model/          # 数据模型定义 (Job, Node)
 │   └── store/          # Etcd 存储层封装
 └── go.mod              # 依赖管理
-🔮 Roadmap (未来规划)
-[ ] High Availability: 集成 Etcd 选主机制，实现 Master 高可用集群。
 
-[ ] Network Overlay: 集成 CNI 插件 (如 Flannel) 实现跨主机容器网络互通。
-
-[ ] Web Dashboard: 提供可视化的集群监控与任务管理面板。

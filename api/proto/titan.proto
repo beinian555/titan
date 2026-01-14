@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package api;
+option go_package = "./pb";
+
+// --- 数据结构映射 (对应之前的 Model) ---
+
+message Resource {
+  int64 milli_cpu = 1;
+  int64 memory_bytes = 2;
+}
+
+message JobSpec {
+  string image = 1;
+  repeated string command = 2;
+  repeated string envs = 3;
+}
+
+// --- 服务 1: MasterService ---
+// 运行在 Master 节点，供 Worker 调用
+service MasterService {
+  
+  // 1. 节点注册
+  // Worker 启动时调用一次，告诉 Master "我来了"
+  rpc RegisterNode (RegisterNodeRequest) returns (RegisterNodeResponse);
+
+  // 2. 心跳汇报
+  // 含金量点：Worker 需要不断汇报自己的“健康状况”和“剩余资源”
+  // 这是调度器做决策的依据
+  rpc SendHeartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+
+  // 3. 任务状态更新
+  // 当任务成功/失败时，Worker 回调此接口
+  rpc UpdateJobStatus (UpdateJobStatusRequest) returns (UpdateJobStatusResponse);
+}
+
+// --- 服务 2: WorkerService ---
+// 运行在 Worker 节点，供 Master 调用
+service WorkerService {
+  
+  // 1. 启动任务
+  // Master 调度完成后，主动通知 Worker 干活
+  rpc StartJob (StartJobRequest) returns (StartJobResponse);
+
+  // 2. 停止任务
+  // 用户取消任务，或超时强制杀掉
+  rpc StopJob (StopJobRequest) returns (StopJobResponse);
+
+  // 3. 获取任务日志 (进阶)
+  // 使用 stream 实时回传日志，这是 gRPC 的杀手级特性
+  rpc GetJobStream (GetJobStreamRequest) returns (stream JobStreamResponse);
+}
+
+// --- 请求/响应消息体定义 ---
+
+message RegisterNodeRequest {
+  string node_id = 1;
+  string ip = 2;
+  Resource total_resource = 3; // 汇报物理总资源
+}
+message RegisterNodeResponse { bool success = 1; }
+
+message HeartbeatRequest {
+  string node_id = 1;
+  Resource available_resource = 2; // 关键：汇报当前还剩多少资源
+  int64 timestamp = 3;
+  // 可以在这里带上正在运行的任务列表，用于校验数据一致性
+}
+message HeartbeatResponse {}
+
+message UpdateJobStatusRequest {
+  string job_id = 1;
+  string state = 2; // Running, Success, Failed
+  int32 exit_code = 3;
+  string error_message = 4;
+}
+message UpdateJobStatusResponse {}
+
+message StartJobRequest {
+  string job_id = 1;
+  JobSpec spec = 2; // 包含镜像、命令等
+}
+message StartJobResponse { bool success = 1; }
+
+message StopJobRequest { string job_id = 1; }
+message StopJobResponse { bool success = 1; }
+
+message GetJobStreamRequest { string job_id = 1; }
+message JobStreamResponse { bytes output = 1; }

@@ -13,7 +13,6 @@
 
 Titan 采用经典的 **Master-Worker** 分布式架构，通过 Etcd 实现元数据的强一致性与组件解耦。
 
-```mermaid
 graph TD
     User[User / CLI] -->|1. Submit Job| Etcd
     User -->|5. Get Logs| Etcd
